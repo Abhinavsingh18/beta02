@@ -6,6 +6,7 @@ import Artworkanalysis from './pages/Artworkanalysis'
 import Creativecollaboration from './pages/Creativecollaboration';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import FileUpload from './pages/FileUpload';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/color-palette" element={<Colorpallete />} />
           <Route path="/artwork-analysis" element={<Artworkanalysis />} />
           <Route path='/creative-collaboration' element={<Creativecollaboration/>}/>
+          <Route path='/file-upload' element={<FileUpload/>}/>
 
         </Routes>
       </Router>
