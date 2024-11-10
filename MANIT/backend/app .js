@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const mongoose=require('mongoose')
 const path=require('path')
 const cors=require('cors')
@@ -41,8 +41,8 @@ app.post('/signup', async (req, res) => {
         } else {
             const newUser = new User({ name, email, password });
             await newUser.save();
+            res.status(200).json({ message: 'Signup successful',newUser});
         }
-        res.status(200).json({ message: 'Signup successful' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
         if (!user || user.password !== password) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        res.status(200).json(user); // Return the whole user data
+        return res.status(200).json({ user }); // Return the whole user data in an object
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -62,8 +62,8 @@ app.post('/login', async (req, res) => {
 
 app.post('/upload-files', upload.array('images', 10), async (req, res) => {
     try {
-        const userData = JSON.parse(req.body.user); // Parse user data from the request body
-        const user = await User.findById(userData._id);
+        const userId = req.query.userId; // Get user ID from query parameters
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -76,12 +76,65 @@ app.post('/upload-files', upload.array('images', 10), async (req, res) => {
 
         await user.save(); // Save the user with the updated arts array
         res.status(200).json({ message: 'Files uploaded and saved successfully' });
-        console.log("Upload successful");
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
     }
 });
+
+app.get('/fetchusers',async(req,res)=>{
+    try {
+        const users = await User.find();
+        return res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
+
+app.get('/profile/:userid', async (req, res) => {
+    try {
+        const userId = req.params.userid; // Get user ID from route parameters
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json(user); // Return the user data
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+app.post('/collaboration/:id', async (req, res) => {
+    try {
+        const userId = req.params.id; // Get user ID from route parameters
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Assuming the collaboration information is sent in the request body
+        const { collaboratorId, collaboratorName, collaboratorGoal, collaboratorMessage } = req.body;
+
+        // Add the collaboration information to the user's collaborations array
+        user.collaborations.push({
+            collaboratorId,
+            collaboratorName,
+            collaboratorGoal,
+            collaboratorMessage,
+            collaboratorStatus: false
+        });
+
+        await user.save(); // Save the user with the updated collaborations array
+        res.status(200).json({ message: 'Collaboration information saved successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 
 
 
